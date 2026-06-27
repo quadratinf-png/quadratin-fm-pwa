@@ -61,12 +61,12 @@ btnPlay.addEventListener('click', () => {
                     artist: 'En Vivo',
                     album: 'Radio Streaming',
                     artwork: [
-                        { src: 'logo.png', sizes: '96x96',   type: 'image/png' },
-                        { src: 'logo.png', sizes: '128x128', type: 'image/png' },
-                        { src: 'logo.png', sizes: '192x192', type: 'image/png' },
-                        { src: 'logo.png', sizes: '256x256', type: 'image/png' },
-                        { src: 'logo.png', sizes: '384x384', type: 'image/png' },
-                        { src: 'logo.png', sizes: '512x512', type: 'image/png' }
+                        { src: 'logo_lockscreen.png', sizes: '96x96',   type: 'image/png' },
+                        { src: 'logo_lockscreen.png', sizes: '128x128', type: 'image/png' },
+                        { src: 'logo_lockscreen.png', sizes: '192x192', type: 'image/png' },
+                        { src: 'logo_lockscreen.png', sizes: '256x256', type: 'image/png' },
+                        { src: 'logo_lockscreen.png', sizes: '384x384', type: 'image/png' },
+                        { src: 'logo_lockscreen.png', sizes: '512x512', type: 'image/png' }
                     ]
                 });
                 
