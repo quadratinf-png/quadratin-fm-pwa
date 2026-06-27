@@ -195,13 +195,23 @@ async function sendMessage() {
     
     chatInput.value = '';
     
+    // Optimistic: show message instantly
+    const optimisticMsg = {
+        nickname: nickname,
+        content: content,
+        created_at: new Date().toISOString(),
+        _optimistic: true
+    };
+    renderMessage(optimisticMsg);
+    scrollToBottom();
+    lastOptimisticContent = content;
+    
     const { error } = await supabaseClient
         .from('messages')
         .insert([{ nickname: nickname, content: content }]);
         
     if (error) {
         console.error('Error enviando mensaje', error);
-        alert('Error al enviar el mensaje');
     }
 }
 
@@ -210,11 +220,20 @@ chatInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
 
+// Track last optimistic message to avoid duplicates
+let lastOptimisticContent = '';
+
 // Suscripción Realtime
 const channel = supabaseClient
     .channel('public:messages')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-        renderMessage(payload.new);
+        // Skip if this is our own optimistic message
+        const msg = payload.new;
+        if (msg.nickname === (currentNickname || 'Oyente') && msg.content === lastOptimisticContent) {
+            lastOptimisticContent = '';
+            return;
+        }
+        renderMessage(msg);
         scrollToBottom();
     })
     .subscribe();
