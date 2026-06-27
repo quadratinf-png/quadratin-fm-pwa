@@ -100,9 +100,11 @@ body, html {
     justify-content: center;
     width: 100%;
     min-height: 30vh;
+    position: relative;
 }
 
 .main-logo {
+    position: absolute;
     max-width: 80%;
     max-height: 200px;
     object-fit: contain;
