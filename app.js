@@ -53,6 +53,43 @@ btnPlay.addEventListener('click', () => {
             statusText.style.color = 'var(--accent-orange)';
             startVisualizer();
             isPlaying = true;
+            
+            // MediaSession: Lock Screen & Control Center metadata
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: 'Quadratin FM',
+                    artist: 'En Vivo',
+                    album: 'Radio Streaming',
+                    artwork: [
+                        { src: 'logo.png', sizes: '96x96',   type: 'image/png' },
+                        { src: 'logo.png', sizes: '128x128', type: 'image/png' },
+                        { src: 'logo.png', sizes: '192x192', type: 'image/png' },
+                        { src: 'logo.png', sizes: '256x256', type: 'image/png' },
+                        { src: 'logo.png', sizes: '384x384', type: 'image/png' },
+                        { src: 'logo.png', sizes: '512x512', type: 'image/png' }
+                    ]
+                });
+                
+                navigator.mediaSession.setActionHandler('play', () => {
+                    audio.src = 'https://stream.zeno.fm/tinswh8fii0tv';
+                    audio.play();
+                    startVisualizer();
+                    btnPlay.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                    statusText.textContent = 'Sonando Ahora';
+                    statusText.style.color = 'var(--accent-orange)';
+                    isPlaying = true;
+                });
+                
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    audio.pause();
+                    audio.src = '';
+                    stopVisualizer();
+                    btnPlay.innerHTML = '<i class="fa-solid fa-play"></i>';
+                    statusText.textContent = 'En vivo';
+                    statusText.style.color = 'var(--text-secondary)';
+                    isPlaying = false;
+                });
+            }
         }).catch(err => {
             console.error("Error al reproducir:", err);
             statusText.textContent = 'Error al conectar';
