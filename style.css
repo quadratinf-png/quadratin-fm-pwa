@@ -263,13 +263,6 @@ body, html {
     border-radius: 12px;
     padding: 12px 15px;
     max-width: 90%;
-    align-self: flex-start;
-}
-
-.chat-message.self {
-    align-self: flex-end;
-    background: rgba(255, 100, 51, 0.15);
-    border-color: rgba(255, 100, 51, 0.3);
 }
 
 .msg-header {
@@ -282,9 +275,6 @@ body, html {
 .msg-name {
     font-weight: bold;
     color: var(--accent-orange);
-}
-.chat-message.self .msg-name {
-    color: white;
 }
 
 .msg-time {

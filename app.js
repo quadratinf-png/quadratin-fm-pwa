@@ -98,10 +98,28 @@ btnPlay.addEventListener('click', () => {
 });
 
 // ── Botones Extra ─────────────────────────────────────
-btnFavorite.addEventListener('click', () => {
+btnFavorite.addEventListener('click', async () => {
     btnFavorite.classList.toggle('active');
     if (btnFavorite.classList.contains('active')) {
         btnFavorite.innerHTML = '<i class="fa-solid fa-heart"></i>';
+        
+        // Send love message to chat (same as Android)
+        const nickname = currentNickname || 'Un oyente';
+        const loveMessage = '¡Me encanta Quadratin FM! ❤️';
+        
+        // Show optimistic message
+        renderMessage({
+            nickname: nickname,
+            content: loveMessage,
+            created_at: new Date().toISOString()
+        });
+        scrollToBottom();
+        lastOptimisticContent = loveMessage;
+        
+        // Send to Supabase
+        await supabaseClient
+            .from('messages')
+            .insert([{ nickname: nickname, content: loveMessage }]);
     } else {
         btnFavorite.innerHTML = '<i class="fa-regular fa-heart"></i>';
     }
@@ -190,10 +208,8 @@ function formatTime(isoString) {
 }
 
 function renderMessage(msg) {
-    const isSelf = msg.nickname === (currentNickname || 'Oyente');
-    
     const div = document.createElement('div');
-    div.className = `chat-message ${isSelf ? 'self' : ''}`;
+    div.className = 'chat-message';
     div.innerHTML = `
         <div class="msg-header">
             <span class="msg-name">${msg.nickname}</span>
