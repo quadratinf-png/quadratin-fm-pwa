@@ -1,210 +1,154 @@
+// ── Supabase ──────────────────────────────────────────
 const SUPABASE_URL = 'https://ohbxjwhflndsrjndtlnu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9oYnhqd2hmbG5kc3JqbmR0bG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0OTgzNjYsImV4cCI6MjA5ODA3NDM2Nn0.eFy_03oUjIBzfs0whFDMHGbaKlGZHnxsw8zJJMhPDoM';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── Variables Globales ────────────────────────────────
-const audio = document.getElementById('radio-audio');
-const btnPlay = document.getElementById('btn-play');
+// ── DOM Elements ──────────────────────────────────────
+const audio     = document.getElementById('radio-audio');
+const btnPlay   = document.getElementById('btn-play');
 const statusText = document.getElementById('status-text');
 const visualizerContainer = document.getElementById('visualizer');
 const btnFavorite = document.getElementById('btn-favorite');
-const btnShare = document.getElementById('btn-share');
-const logo = document.getElementById('main-logo');
+const btnShare  = document.getElementById('btn-share');
+const chatMessages = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-message');
+const btnSend   = document.getElementById('btn-send');
+const profileNicknameInput = document.getElementById('profile-nickname');
+const btnSaveProfile = document.getElementById('btn-save-profile');
+const navItems  = document.querySelectorAll('.nav-item');
+const views     = document.querySelectorAll('.view');
 
 let isPlaying = false;
-const NUM_BARS = 12;
+let currentNickname = localStorage.getItem('nickname') || '';
+let lastOptimisticContent = '';
+const STREAM_URL = 'https://stream.zeno.fm/tinswh8fii0tv';
 
-// ── Inicializar Visualizador (Falso) ──────────────────
-function initVisualizer() {
-    visualizerContainer.innerHTML = '';
-    for (let i = 0; i < NUM_BARS; i++) {
+// ── Visualizer (Pure CSS driven) ──────────────────────
+(function initVisualizer() {
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < 12; i++) {
         const bar = document.createElement('div');
         bar.className = 'vis-bar';
-        bar.style.height = '10px';
-        visualizerContainer.appendChild(bar);
+        fragment.appendChild(bar);
     }
+    visualizerContainer.appendChild(fragment);
+})();
+
+function startVisualizer() { visualizerContainer.classList.add('is-playing'); }
+function stopVisualizer()  { visualizerContainer.classList.remove('is-playing'); }
+
+// ── Audio Controls ────────────────────────────────────
+function playRadio() {
+    audio.src = STREAM_URL;
+    audio.play().then(() => {
+        btnPlay.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        statusText.textContent = 'Sonando Ahora';
+        statusText.style.color = 'var(--accent-orange)';
+        startVisualizer();
+        isPlaying = true;
+        setupMediaSession();
+    }).catch(() => {
+        statusText.textContent = 'Error al conectar';
+    });
 }
-initVisualizer();
 
-function startVisualizer() {
-    visualizerContainer.classList.add('is-playing');
+function pauseRadio() {
+    audio.pause();
+    audio.src = '';
+    btnPlay.innerHTML = '<i class="fa-solid fa-play"></i>';
+    statusText.textContent = 'En vivo';
+    statusText.style.color = 'var(--text-secondary)';
+    stopVisualizer();
+    isPlaying = false;
 }
 
-function stopVisualizer() {
-    visualizerContainer.classList.remove('is-playing');
+btnPlay.addEventListener('click', () => isPlaying ? pauseRadio() : playRadio());
+
+// ── MediaSession (Lock Screen) ────────────────────────
+function setupMediaSession() {
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+        title: 'Quadratin FM',
+        artist: 'En Vivo',
+        album: 'Radio Streaming',
+        artwork: [
+            { src: 'logo_lockscreen.png', sizes: '96x96',   type: 'image/png' },
+            { src: 'logo_lockscreen.png', sizes: '192x192', type: 'image/png' },
+            { src: 'logo_lockscreen.png', sizes: '512x512', type: 'image/png' }
+        ]
+    });
+    navigator.mediaSession.setActionHandler('play',  playRadio);
+    navigator.mediaSession.setActionHandler('pause', pauseRadio);
 }
 
-// ── Control de Audio ──────────────────────────────────
-btnPlay.addEventListener('click', () => {
-    if (isPlaying) {
-        audio.pause();
-        // Zeno FM requires resetting src to stop buffering in background
-        audio.src = '';
-        btnPlay.innerHTML = '<i class="fa-solid fa-play"></i>';
-        statusText.textContent = 'En vivo';
-        statusText.style.color = 'var(--text-secondary)';
-        stopVisualizer();
-        isPlaying = false;
-    } else {
-        audio.src = 'https://stream.zeno.fm/tinswh8fii0tv';
-        audio.play().then(() => {
-            btnPlay.innerHTML = '<i class="fa-solid fa-pause"></i>';
-            statusText.textContent = 'Sonando Ahora';
-            statusText.style.color = 'var(--accent-orange)';
-            startVisualizer();
-            isPlaying = true;
-            
-            // MediaSession: Lock Screen & Control Center metadata
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: 'Quadratin FM',
-                    artist: 'En Vivo',
-                    album: 'Radio Streaming',
-                    artwork: [
-                        { src: 'logo_lockscreen.png', sizes: '96x96',   type: 'image/png' },
-                        { src: 'logo_lockscreen.png', sizes: '128x128', type: 'image/png' },
-                        { src: 'logo_lockscreen.png', sizes: '192x192', type: 'image/png' },
-                        { src: 'logo_lockscreen.png', sizes: '256x256', type: 'image/png' },
-                        { src: 'logo_lockscreen.png', sizes: '384x384', type: 'image/png' },
-                        { src: 'logo_lockscreen.png', sizes: '512x512', type: 'image/png' }
-                    ]
-                });
-                
-                navigator.mediaSession.setActionHandler('play', () => {
-                    audio.src = 'https://stream.zeno.fm/tinswh8fii0tv';
-                    audio.play();
-                    startVisualizer();
-                    btnPlay.innerHTML = '<i class="fa-solid fa-pause"></i>';
-                    statusText.textContent = 'Sonando Ahora';
-                    statusText.style.color = 'var(--accent-orange)';
-                    isPlaying = true;
-                });
-                
-                navigator.mediaSession.setActionHandler('pause', () => {
-                    audio.pause();
-                    audio.src = '';
-                    stopVisualizer();
-                    btnPlay.innerHTML = '<i class="fa-solid fa-play"></i>';
-                    statusText.textContent = 'En vivo';
-                    statusText.style.color = 'var(--text-secondary)';
-                    isPlaying = false;
-                });
-            }
-        }).catch(err => {
-            console.error("Error al reproducir:", err);
-            statusText.textContent = 'Error al conectar';
-        });
-    }
-});
-
-// ── Botones Extra ─────────────────────────────────────
+// ── Favorite Button ───────────────────────────────────
 btnFavorite.addEventListener('click', async () => {
     btnFavorite.classList.toggle('active');
     if (btnFavorite.classList.contains('active')) {
         btnFavorite.innerHTML = '<i class="fa-solid fa-heart"></i>';
-        
-        // Send love message to chat (same as Android)
         const nickname = currentNickname || 'Un oyente';
         const loveMessage = '¡Me encanta Quadratin FM! ❤️';
-        
-        // Show optimistic message
-        renderMessage({
-            nickname: nickname,
-            content: loveMessage,
-            created_at: new Date().toISOString()
-        });
+        renderMessage({ nickname, content: loveMessage, created_at: new Date().toISOString() });
         scrollToBottom();
         lastOptimisticContent = loveMessage;
-        
-        // Send to Supabase
-        await supabaseClient
-            .from('messages')
-            .insert([{ nickname: nickname, content: loveMessage }]);
+        await supabaseClient.from('messages').insert([{ nickname, content: loveMessage }]);
     } else {
         btnFavorite.innerHTML = '<i class="fa-regular fa-heart"></i>';
     }
 });
 
+// ── Share Button ──────────────────────────────────────
 btnShare.addEventListener('click', () => {
     if (navigator.share) {
-        navigator.share({
-            title: 'Quadratin FM',
-            text: '¡Escucha Quadratin FM en vivo!',
-            url: window.location.href,
-        });
+        navigator.share({ title: 'Quadratin FM', text: '¡Escucha Quadratin FM en vivo!', url: location.href });
     } else {
-        alert('Copia este enlace para compartir: ' + window.location.href);
+        alert('Copia este enlace para compartir: ' + location.href);
     }
 });
 
-// ── Navegación Tabs ───────────────────────────────────
-const navItems = document.querySelectorAll('.nav-item');
-const views = document.querySelectorAll('.view');
-
+// ── Tab Navigation ────────────────────────────────────
 navItems.forEach(item => {
     item.addEventListener('click', (e) => {
         e.preventDefault();
-        
-        // Remove active class from all navs and views
-        navItems.forEach(nav => nav.classList.remove('active'));
-        views.forEach(view => view.classList.remove('active'));
-        
-        // Add active class to clicked
+        navItems.forEach(n => n.classList.remove('active'));
+        views.forEach(v => v.classList.remove('active'));
         item.classList.add('active');
-        const targetId = item.getAttribute('data-target');
-        document.getElementById(targetId).classList.add('active');
-        
-        // Si entramos al chat, hacer scroll abajo
-        if (targetId === 'view-chat') {
-            scrollToBottom();
+        const target = item.getAttribute('data-target');
+        document.getElementById(target).classList.add('active');
+        if (target === 'view-chat') {
+            requestAnimationFrame(scrollToBottom);
         }
     });
 });
 
-// ── Chat y Perfil (Supabase) ──────────────────────────
-const chatMessages = document.getElementById('chat-messages');
-const chatInput = document.getElementById('chat-message');
-const btnSend = document.getElementById('btn-send');
-
-const profileNicknameInput = document.getElementById('profile-nickname');
-const btnSaveProfile = document.getElementById('btn-save-profile');
-
-// Cargar nickname guardado
-let currentNickname = localStorage.getItem('nickname') || '';
+// ── Profile ───────────────────────────────────────────
 if (currentNickname && profileNicknameInput) {
     profileNicknameInput.value = currentNickname;
 }
 
-if (btnSaveProfile && profileNicknameInput) {
+if (btnSaveProfile) {
     btnSaveProfile.addEventListener('click', () => {
-        const newName = profileNicknameInput.value.trim();
-        if (newName) {
-            currentNickname = newName;
-            localStorage.setItem('nickname', currentNickname);
-            
-            // Show success visual feedback
-            btnSaveProfile.textContent = '¡Guardado!';
-            btnSaveProfile.style.background = '#28a745';
-            setTimeout(() => {
-                btnSaveProfile.textContent = 'Guardar Perfil';
-                btnSaveProfile.style.background = 'var(--accent-orange)';
-                
-                // Auto switch to chat tab
-                document.querySelector('[data-target="view-chat"]').click();
-            }, 1000);
-        }
+        const name = profileNicknameInput.value.trim();
+        if (!name) return;
+        currentNickname = name;
+        localStorage.setItem('nickname', currentNickname);
+        btnSaveProfile.textContent = '¡Guardado!';
+        btnSaveProfile.style.background = '#28a745';
+        setTimeout(() => {
+            btnSaveProfile.textContent = 'Guardar Perfil';
+            btnSaveProfile.style.background = '';
+            document.querySelector('[data-target="view-chat"]').click();
+        }, 800);
     });
 }
 
-function formatTime(isoString) {
-    const date = new Date(isoString);
-    let hours = date.getHours();
-    let minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12; 
-    minutes = minutes < 10 ? '0' + minutes : minutes;
-    return `${hours}:${minutes} ${ampm}`;
+// ── Chat Helpers ──────────────────────────────────────
+function formatTime(iso) {
+    const d = new Date(iso);
+    let h = d.getHours(), m = d.getMinutes();
+    const ap = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${m < 10 ? '0' + m : m} ${ap}`;
 }
 
 function renderMessage(msg) {
@@ -224,63 +168,51 @@ function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Cargar historial
+// ── Load Messages ─────────────────────────────────────
 async function loadMessages() {
     const { data, error } = await supabaseClient
         .from('messages')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
-        
     if (!error && data) {
-        // Invertimos porque vienen de mas nuevo a mas viejo
-        data.reverse().forEach(renderMessage);
+        const fragment = document.createDocumentFragment();
+        data.reverse().forEach(msg => {
+            const div = document.createElement('div');
+            div.className = 'chat-message';
+            div.innerHTML = `
+                <div class="msg-header">
+                    <span class="msg-name">${msg.nickname}</span>
+                    <span class="msg-time">${formatTime(msg.created_at)}</span>
+                </div>
+                <div class="msg-content">${msg.content}</div>
+            `;
+            fragment.appendChild(div);
+        });
+        chatMessages.appendChild(fragment);
         scrollToBottom();
     }
 }
 
-// Enviar Mensaje
+// ── Send Message ──────────────────────────────────────
 async function sendMessage() {
     const content = chatInput.value.trim();
-    const nickname = currentNickname || 'Oyente';
-    
     if (!content) return;
-    
+    const nickname = currentNickname || 'Oyente';
     chatInput.value = '';
-    
-    // Optimistic: show message instantly
-    const optimisticMsg = {
-        nickname: nickname,
-        content: content,
-        created_at: new Date().toISOString(),
-        _optimistic: true
-    };
-    renderMessage(optimisticMsg);
+    renderMessage({ nickname, content, created_at: new Date().toISOString() });
     scrollToBottom();
     lastOptimisticContent = content;
-    
-    const { error } = await supabaseClient
-        .from('messages')
-        .insert([{ nickname: nickname, content: content }]);
-        
-    if (error) {
-        console.error('Error enviando mensaje', error);
-    }
+    await supabaseClient.from('messages').insert([{ nickname, content }]);
 }
 
 btnSend.addEventListener('click', sendMessage);
-chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
-});
+chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-// Track last optimistic message to avoid duplicates
-let lastOptimisticContent = '';
-
-// Suscripción Realtime
-const channel = supabaseClient
+// ── Realtime Subscription ─────────────────────────────
+supabaseClient
     .channel('public:messages')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-        // Skip if this is our own optimistic message
         const msg = payload.new;
         if (msg.nickname === (currentNickname || 'Oyente') && msg.content === lastOptimisticContent) {
             lastOptimisticContent = '';
@@ -291,5 +223,5 @@ const channel = supabaseClient
     })
     .subscribe();
 
-// Iniciar
+// ── Init ──────────────────────────────────────────────
 loadMessages();

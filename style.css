@@ -6,6 +6,9 @@
     --text-secondary: #8892A4;
     --glass-bg: rgba(30, 45, 77, 0.4);
     --glass-border: rgba(255, 255, 255, 0.1);
+    /* iOS Safe Area */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 * {
@@ -14,6 +17,7 @@
     box-sizing: border-box;
     font-family: 'Inter', sans-serif;
     -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
 }
 
 body, html {
@@ -22,6 +26,12 @@ body, html {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     overflow: hidden;
+    /* Prevent iOS bounce/rubber-band */
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    position: fixed;
+    top: 0;
+    left: 0;
 }
 
 /* Background Setup */
@@ -33,6 +43,7 @@ body, html {
     height: 100%;
     background: url('bg_studio.jpg') center/cover no-repeat;
     z-index: 1;
+    transform: translateZ(0); /* GPU layer */
 }
 
 .bg-overlay::after {
@@ -42,21 +53,26 @@ body, html {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(15, 19, 34, 0.40); /* Light overlay - lets background show through */
+    background: rgba(15, 19, 34, 0.40);
 }
 
 .app-container {
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: calc(60px + var(--safe-bottom));
     z-index: 2;
-    height: calc(100% - 60px); /* Leave room for bottom nav */
     display: flex;
     flex-direction: column;
+    padding-top: var(--safe-top);
 }
 
 /* Header */
 .header {
     text-align: center;
     padding: 20px 0 10px;
+    flex-shrink: 0;
 }
 
 .header-title {
@@ -79,7 +95,7 @@ body, html {
     display: none;
     flex: 1;
     flex-direction: column;
-    overflow-y: auto;
+    overflow: hidden;
     padding: 20px;
 }
 
@@ -87,20 +103,21 @@ body, html {
     display: flex;
 }
 
-/* Radio View Specifics */
+/* Radio View */
 #view-radio {
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
 
 .logo-container {
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
-    min-height: 30vh;
+    height: 35vh;
     position: relative;
+    flex-shrink: 0;
 }
 
 .main-logo {
@@ -108,7 +125,6 @@ body, html {
     max-width: 80%;
     max-height: 300px;
     object-fit: contain;
-    transition: transform 0.3s ease;
     will-change: transform;
 }
 
@@ -132,13 +148,14 @@ body, html {
     height: 60px;
     margin-bottom: 20px;
     width: 100%;
+    flex-shrink: 0;
 }
 
 .vis-bar {
     width: 12px;
     background: #0066FF;
     border-radius: 4px;
-    height: 10px; /* Base height */
+    height: 10px;
     position: relative;
     transform-origin: bottom;
     will-change: transform;
@@ -155,7 +172,7 @@ body, html {
     border-radius: 4px;
 }
 
-/* Bar Animations (Hardware Accelerated) */
+/* Bar Animations (GPU) */
 @keyframes barDance {
     0%, 100% { transform: scaleY(1); }
     50% { transform: scaleY(var(--scale-max, 4)); }
@@ -165,17 +182,16 @@ body, html {
     animation: barDance 0.5s infinite alternate ease-in-out;
 }
 
-/* Assign unique animation properties to each bar */
-.vis-bar:nth-child(1) { --scale-max: 3.5; animation-duration: 0.4s; animation-delay: 0.0s; }
-.vis-bar:nth-child(2) { --scale-max: 5.0; animation-duration: 0.5s; animation-delay: 0.1s; }
-.vis-bar:nth-child(3) { --scale-max: 2.5; animation-duration: 0.45s; animation-delay: 0.2s; }
-.vis-bar:nth-child(4) { --scale-max: 4.2; animation-duration: 0.6s; animation-delay: 0.3s; }
-.vis-bar:nth-child(5) { --scale-max: 3.0; animation-duration: 0.35s; animation-delay: 0.4s; }
-.vis-bar:nth-child(6) { --scale-max: 4.8; animation-duration: 0.55s; animation-delay: 0.1s; }
-.vis-bar:nth-child(7) { --scale-max: 3.8; animation-duration: 0.4s; animation-delay: 0.25s; }
-.vis-bar:nth-child(8) { --scale-max: 2.9; animation-duration: 0.5s; animation-delay: 0.35s; }
-.vis-bar:nth-child(9) { --scale-max: 4.5; animation-duration: 0.45s; animation-delay: 0.05s; }
-.vis-bar:nth-child(10) { --scale-max: 3.2; animation-duration: 0.6s; animation-delay: 0.15s; }
+.vis-bar:nth-child(1)  { --scale-max: 3.5; animation-duration: 0.4s;  animation-delay: 0.0s; }
+.vis-bar:nth-child(2)  { --scale-max: 5.0; animation-duration: 0.5s;  animation-delay: 0.1s; }
+.vis-bar:nth-child(3)  { --scale-max: 2.5; animation-duration: 0.45s; animation-delay: 0.2s; }
+.vis-bar:nth-child(4)  { --scale-max: 4.2; animation-duration: 0.6s;  animation-delay: 0.3s; }
+.vis-bar:nth-child(5)  { --scale-max: 3.0; animation-duration: 0.35s; animation-delay: 0.4s; }
+.vis-bar:nth-child(6)  { --scale-max: 4.8; animation-duration: 0.55s; animation-delay: 0.1s; }
+.vis-bar:nth-child(7)  { --scale-max: 3.8; animation-duration: 0.4s;  animation-delay: 0.25s; }
+.vis-bar:nth-child(8)  { --scale-max: 2.9; animation-duration: 0.5s;  animation-delay: 0.35s; }
+.vis-bar:nth-child(9)  { --scale-max: 4.5; animation-duration: 0.45s; animation-delay: 0.05s; }
+.vis-bar:nth-child(10) { --scale-max: 3.2; animation-duration: 0.6s;  animation-delay: 0.15s; }
 .vis-bar:nth-child(11) { --scale-max: 4.0; animation-duration: 0.35s; animation-delay: 0.45s; }
 .vis-bar:nth-child(12) { --scale-max: 2.7; animation-duration: 0.55s; animation-delay: 0.2s; }
 
@@ -184,6 +200,7 @@ body, html {
     font-size: 16px;
     font-weight: bold;
     margin-bottom: 30px;
+    flex-shrink: 0;
 }
 
 /* Player Controls */
@@ -193,6 +210,7 @@ body, html {
     justify-content: center;
     gap: 40px;
     margin-bottom: 20px;
+    flex-shrink: 0;
 }
 
 .btn-icon {
@@ -201,7 +219,8 @@ body, html {
     color: var(--text-secondary);
     font-size: 24px;
     cursor: pointer;
-    transition: color 0.3s;
+    transition: color 0.2s;
+    padding: 10px; /* Bigger touch target */
 }
 
 .btn-icon.active {
@@ -221,16 +240,17 @@ body, html {
     justify-content: center;
     box-shadow: 0 0 20px rgba(255, 100, 51, 0.4);
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.15s;
 }
 
 .btn-play:active {
-    transform: scale(0.95);
+    transform: scale(0.92);
 }
 
-/* Chat View Specifics */
+/* Chat View */
 #view-chat {
     padding: 0;
+    overflow: hidden;
 }
 
 .chat-header {
@@ -239,6 +259,7 @@ body, html {
     background: rgba(15, 19, 34, 0.5);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    flex-shrink: 0;
 }
 
 .chat-header h2 {
@@ -250,19 +271,20 @@ body, html {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     display: flex;
     flex-direction: column;
     gap: 15px;
+    overscroll-behavior-y: contain;
 }
 
 .chat-message {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border-radius: 12px;
     padding: 12px 15px;
     max-width: 90%;
+    transform: translateZ(0); /* GPU compositing */
 }
 
 .msg-header {
@@ -289,12 +311,10 @@ body, html {
 /* Chat Input */
 .chat-input-container {
     padding: 15px;
-    background: rgba(15, 19, 34, 0.8);
-    backdrop-filter: blur(10px);
+    padding-bottom: calc(15px + var(--safe-bottom));
+    background: rgba(15, 19, 34, 0.9);
     border-top: 1px solid var(--glass-border);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-shrink: 0;
 }
 
 .input-row {
@@ -308,20 +328,19 @@ body, html {
     color: white;
     border-radius: 20px;
     padding: 12px 15px;
-    font-size: 14px;
+    font-size: 16px; /* 16px prevents iOS zoom on focus */
     outline: none;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .chat-input:focus {
     border-color: var(--accent-orange);
 }
 
-.nickname-input {
-    width: 50%;
-}
-
 .message-input {
     flex: 1;
+    min-width: 0;
 }
 
 .btn-send {
@@ -331,6 +350,7 @@ body, html {
     border-radius: 50%;
     width: 44px;
     height: 44px;
+    min-width: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -344,7 +364,8 @@ body, html {
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 60px;
+    height: calc(60px + var(--safe-bottom));
+    padding-bottom: var(--safe-bottom);
     background: var(--bg-card);
     display: flex;
     z-index: 10;
@@ -361,7 +382,7 @@ body, html {
     text-decoration: none;
     font-size: 10px;
     gap: 4px;
-    transition: color 0.2s;
+    transition: color 0.15s;
 }
 
 .nav-item i {
@@ -372,9 +393,11 @@ body, html {
     color: var(--accent-orange);
 }
 
-/* Profile View Specifics */
+/* Profile View */
 #view-profile {
     padding: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .profile-container {
@@ -430,11 +453,12 @@ body, html {
     font-weight: bold;
     cursor: pointer;
     margin-top: 10px;
-    transition: transform 0.2s;
+    transition: transform 0.15s;
+    -webkit-appearance: none;
 }
 
 .btn-primary:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
 }
 
 /* Hide scrollbar */
