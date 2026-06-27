@@ -64,10 +64,29 @@
                 <!-- Messages go here -->
             </div>
             <div class="chat-input-container">
-                <input type="text" id="chat-nickname" placeholder="Tu nombre..." class="chat-input nickname-input">
                 <div class="input-row">
                     <input type="text" id="chat-message" placeholder="Escribe un mensaje..." class="chat-input message-input">
                     <button id="btn-send" class="btn-send"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: PROFILE -->
+        <div id="view-profile" class="view">
+            <div class="chat-header">
+                <h2>Mi Perfil</h2>
+            </div>
+            <div class="profile-container">
+                <div class="profile-avatar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <h3>Configura tu cuenta</h3>
+                <p class="profile-desc">Tu nombre aparecerá en el chat público.</p>
+                
+                <div class="profile-form">
+                    <label>Nombre de Usuario</label>
+                    <input type="text" id="profile-nickname" placeholder="Ej. Juan Pérez" class="chat-input">
+                    <button id="btn-save-profile" class="btn-primary">Guardar Perfil</button>
                 </div>
             </div>
         </div>
@@ -83,6 +102,10 @@
         <a href="#" class="nav-item" data-target="view-chat">
             <i class="fa-solid fa-comment-dots"></i>
             <span>Chat</span>
+        </a>
+        <a href="#" class="nav-item" data-target="view-profile">
+            <i class="fa-solid fa-user"></i>
+            <span>Perfil</span>
         </a>
     </nav>
 

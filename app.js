@@ -1,7 +1,6 @@
-// ── Configuración de Supabase ─────────────────────────
 const SUPABASE_URL = 'https://ohbxjwhflndsrjndtlnu.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9oYnhqd2hmbG5kc3JqbmR0bG51Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0OTgzNjYsImV4cCI6MjA5ODA3NDM2Nn0.eFy_03oUjIBzfs0whFDMHGbaKlGZHnxsw8zJJMhPDoM';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ── Variables Globales ────────────────────────────────
 const audio = document.getElementById('radio-audio');
@@ -125,15 +124,38 @@ navItems.forEach(item => {
     });
 });
 
-// ── Chat Realtime (Supabase) ──────────────────────────
+// ── Chat y Perfil (Supabase) ──────────────────────────
 const chatMessages = document.getElementById('chat-messages');
 const chatInput = document.getElementById('chat-message');
-const nicknameInput = document.getElementById('chat-nickname');
 const btnSend = document.getElementById('btn-send');
 
+const profileNicknameInput = document.getElementById('profile-nickname');
+const btnSaveProfile = document.getElementById('btn-save-profile');
+
 // Cargar nickname guardado
-const savedName = localStorage.getItem('nickname');
-if (savedName) nicknameInput.value = savedName;
+let currentNickname = localStorage.getItem('nickname') || '';
+if (currentNickname) {
+    profileNicknameInput.value = currentNickname;
+}
+
+btnSaveProfile.addEventListener('click', () => {
+    const newName = profileNicknameInput.value.trim();
+    if (newName) {
+        currentNickname = newName;
+        localStorage.setItem('nickname', currentNickname);
+        
+        // Show success visual feedback
+        btnSaveProfile.textContent = '¡Guardado!';
+        btnSaveProfile.style.background = '#28a745';
+        setTimeout(() => {
+            btnSaveProfile.textContent = 'Guardar Perfil';
+            btnSaveProfile.style.background = 'var(--accent-orange)';
+            
+            // Auto switch to chat tab
+            document.querySelector('[data-target="view-chat"]').click();
+        }, 1000);
+    }
+});
 
 function formatTime(isoString) {
     const date = new Date(isoString);
@@ -147,8 +169,7 @@ function formatTime(isoString) {
 }
 
 function renderMessage(msg) {
-    const currentName = nicknameInput.value.trim() || 'Oyente';
-    const isSelf = msg.nickname === currentName;
+    const isSelf = msg.nickname === (currentNickname || 'Oyente');
     
     const div = document.createElement('div');
     div.className = `chat-message ${isSelf ? 'self' : ''}`;
@@ -168,7 +189,7 @@ function scrollToBottom() {
 
 // Cargar historial
 async function loadMessages() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('messages')
         .select('*')
         .order('created_at', { ascending: false })
@@ -184,16 +205,13 @@ async function loadMessages() {
 // Enviar Mensaje
 async function sendMessage() {
     const content = chatInput.value.trim();
-    const nickname = nicknameInput.value.trim() || 'Oyente';
+    const nickname = currentNickname || 'Oyente';
     
     if (!content) return;
     
-    // Guardar nickname localmente
-    localStorage.setItem('nickname', nickname);
-    
     chatInput.value = '';
     
-    const { error } = await supabase
+    const { error } = await supabaseClient
         .from('messages')
         .insert([{ nickname: nickname, content: content }]);
         
@@ -209,7 +227,7 @@ chatInput.addEventListener('keypress', (e) => {
 });
 
 // Suscripción Realtime
-const channel = supabase
+const channel = supabaseClient
     .channel('public:messages')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
         renderMessage(payload.new);
