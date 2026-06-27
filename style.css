@@ -26,12 +26,8 @@ body, html {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     overflow: hidden;
-    /* Prevent iOS bounce/rubber-band */
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
-    position: fixed;
-    top: 0;
-    left: 0;
 }
 
 /* Background Setup */
@@ -57,12 +53,10 @@ body, html {
 }
 
 .app-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: calc(60px + var(--safe-bottom));
+    position: relative;
     z-index: 2;
+    height: 100%;
+    padding-bottom: calc(60px + var(--safe-bottom));
     display: flex;
     flex-direction: column;
     padding-top: var(--safe-top);
