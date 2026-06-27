@@ -12,7 +12,6 @@ const btnShare = document.getElementById('btn-share');
 const logo = document.getElementById('main-logo');
 
 let isPlaying = false;
-let visualizerInterval = null;
 const NUM_BARS = 12;
 
 // ── Inicializar Visualizador (Falso) ──────────────────
@@ -28,28 +27,11 @@ function initVisualizer() {
 initVisualizer();
 
 function startVisualizer() {
-    if (visualizerInterval) return;
-    const bars = document.querySelectorAll('.vis-bar');
-    visualizerInterval = setInterval(() => {
-        bars.forEach(bar => {
-            // Random height between 10px and 50px
-            const height = Math.floor(Math.random() * 40) + 10;
-            bar.style.height = `${height}px`;
-        });
-        
-        // Pulse logo slightly
-        logo.style.transform = `scale(${1 + Math.random() * 0.05})`;
-    }, 150);
+    visualizerContainer.classList.add('is-playing');
 }
 
 function stopVisualizer() {
-    clearInterval(visualizerInterval);
-    visualizerInterval = null;
-    const bars = document.querySelectorAll('.vis-bar');
-    bars.forEach(bar => {
-        bar.style.height = '10px';
-    });
-    logo.style.transform = 'scale(1)';
+    visualizerContainer.classList.remove('is-playing');
 }
 
 // ── Control de Audio ──────────────────────────────────
