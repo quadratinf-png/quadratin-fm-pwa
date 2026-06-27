@@ -134,28 +134,30 @@ const btnSaveProfile = document.getElementById('btn-save-profile');
 
 // Cargar nickname guardado
 let currentNickname = localStorage.getItem('nickname') || '';
-if (currentNickname) {
+if (currentNickname && profileNicknameInput) {
     profileNicknameInput.value = currentNickname;
 }
 
-btnSaveProfile.addEventListener('click', () => {
-    const newName = profileNicknameInput.value.trim();
-    if (newName) {
-        currentNickname = newName;
-        localStorage.setItem('nickname', currentNickname);
-        
-        // Show success visual feedback
-        btnSaveProfile.textContent = '¡Guardado!';
-        btnSaveProfile.style.background = '#28a745';
-        setTimeout(() => {
-            btnSaveProfile.textContent = 'Guardar Perfil';
-            btnSaveProfile.style.background = 'var(--accent-orange)';
+if (btnSaveProfile && profileNicknameInput) {
+    btnSaveProfile.addEventListener('click', () => {
+        const newName = profileNicknameInput.value.trim();
+        if (newName) {
+            currentNickname = newName;
+            localStorage.setItem('nickname', currentNickname);
             
-            // Auto switch to chat tab
-            document.querySelector('[data-target="view-chat"]').click();
-        }, 1000);
-    }
-});
+            // Show success visual feedback
+            btnSaveProfile.textContent = '¡Guardado!';
+            btnSaveProfile.style.background = '#28a745';
+            setTimeout(() => {
+                btnSaveProfile.textContent = 'Guardar Perfil';
+                btnSaveProfile.style.background = 'var(--accent-orange)';
+                
+                // Auto switch to chat tab
+                document.querySelector('[data-target="view-chat"]').click();
+            }, 1000);
+        }
+    });
+}
 
 function formatTime(isoString) {
     const date = new Date(isoString);
